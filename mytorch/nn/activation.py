@@ -44,10 +44,8 @@ class Tanh:
     Read the writeup for further details on Tanh.
     """
     def forward(self, Z):
-        ez = np.exp(Z)
-        ez_neg = np.exp(-Z)
 
-        self.A = (ez-ez_neg)/(ez+ez_neg)
+        self.A = np.tanh(Z)
 
         return self.A
 

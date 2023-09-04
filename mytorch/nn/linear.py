@@ -3,14 +3,20 @@ import numpy as np
 
 class Linear:
 
-    def __init__(self, in_features, out_features, debug=False):
+    def __init__(self, in_features, out_features, weight_init_fn=None, bias_init_fn=None, debug=False):
         """
         Initialize the weights and biases with zeros
         Checkout np.zeros function.
         Read the writeup to identify the right shapes for all.
         """
-        self.W = np.zeros((out_features, in_features))  
-        self.b = np.zeros((out_features, 1)) 
+        if weight_init_fn is None:
+            self.W = np.zeros((out_features, in_features))  
+        else:
+            self.W = weight_init_fn(out_features, in_features)
+        if bias_init_fn is None:
+            self.b = np.zeros((out_features, 1)) 
+        else:
+            self.b = bias_init_fn(out_features)
 
         self.debug = debug
 
