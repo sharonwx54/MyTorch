@@ -1,47 +1,39 @@
 import numpy as np
 
+# TODO: Implement this code similar to how you did for HW1P1 or HW2P1.
 
 class Linear:
 
-    def __init__(self, in_features, out_features, weight_init_fn=None, bias_init_fn=None, debug=False):
-        """
-        Initialize the weights and biases with zeros
-        Checkout np.zeros function.
-        Read the writeup to identify the right shapes for all.
-        """
-        if weight_init_fn is None:
-            self.W = np.zeros((out_features, in_features))  
-        else:
-            self.W = weight_init_fn(out_features, in_features)
-        if bias_init_fn is None:
-            self.b = np.zeros((out_features, 1)) 
-        else:
-            self.b = bias_init_fn(out_features)
+    def __init__(self, in_features, out_features, debug=False):
+
+        self.W = np.zeros((out_features, in_features), dtype="f")
+        self.b = np.zeros((out_features, 1), dtype="f")
+        self.dLdW = np.zeros((out_features, in_features), dtype="f")
+        self.dLdb = np.zeros((out_features, 1), dtype="f")
 
         self.debug = debug
 
     def forward(self, A):
-        """
-        :param A: Input to the linear layer with shape (N, C0)
-        :return: Output Z of linear layer with shape (N, C1)
-        Read the writeup for implementation details
-        """
-        self.A = A  # TODO
-        self.N = self.A.shape[0]  # TODO store the batch size of input
-        # Think how will self.Ones helps in the calculations and uncomment below
-        self.Ones = np.ones((self.N,1))
-        Z = self.A@self.W.T+self.Ones@self.b.T # TODO
+
+        self.A = A
+        self.N = A.shape[0]
+        self.Ones = np.ones((self.N, 1), dtype="f")
+        #Z = self.A.dot(self.W.T)+self.b
+        Z = self.A@self.W.T+self.Ones@self.b.T
 
         return Z
 
     def backward(self, dLdZ):
 
+
         dZdA = self.W.T  # TODO
         dZdW = self.A  # TODO
+        dZdi = None
         dZdb = self.Ones  # TODO
 
         dLdA = dLdZ @ dZdA.T  # TODO
         dLdW = dLdZ.T @ dZdW  # TODO
+        dLdi = None
         dLdb = dLdZ.T @ dZdb  # TODO
         self.dLdW = dLdW / self.N
         self.dLdb = dLdb / self.N
@@ -50,7 +42,9 @@ class Linear:
 
             self.dZdA = dZdA
             self.dZdW = dZdW
+            self.dZdi = dZdi
             self.dZdb = dZdb
             self.dLdA = dLdA
+            self.dLdi = dLdi
 
         return dLdA

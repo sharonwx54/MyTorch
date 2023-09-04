@@ -1,64 +1,67 @@
+# Do not import any additional 3rd party external libraries as they will not
+# be available to AutoLab and are not needed (or allowed)
+
 import numpy as np
+import os
 
+# The following Criterion class will be used again as the basis for a number
+# of loss functions (which are in the form of classes so that they can be
+# exchanged easily (it's how PyTorch and other ML libraries do it))
 
-class MSELoss:
+class Criterion(object):
+    """
+    Interface for loss functions.
+    """
 
-    def forward(self, A, Y):
+    # Nothing needs done to this class, it's used by the following Criterion classes
+
+    def __init__(self):
+        self.logits = None
+        self.labels = None
+        self.loss = None
+
+    def __call__(self, x, y):
+        return self.forward(x, y)
+
+    def forward(self, x, y):
+        raise NotImplemented
+
+    def derivative(self):
+        raise NotImplemented
+
+class SoftmaxCrossEntropy(Criterion):
+    """
+    Softmax loss
+
+    """
+
+    def __init__(self):
+        super(SoftmaxCrossEntropy, self).__init__()
+
+    def forward(self, x, y):
         """
-        Calculate the Mean Squared error
-        :param A: Output of the model of shape (N, C)
-        :param Y: Ground-truth values of shape (N, C)
-        :Return: MSE Loss(scalar)
-
+        TODO: Implement this function similar to how you did for HW1P1 or HW2P1.
+        Argument:
+            x (np.array): (batch size, 10)
+            y (np.array): (batch size, 10)
+        Return:
+            out (np.array): (batch size, )
         """
 
-        self.A = A
-        self.Y = Y
-        self.N = A.shape[0]  # TODO
-        self.C = A.shape[1]  # TODO
-        se = np.multiply(self.A - self.Y, self.A - self.Y) # TODO
-        sse = np.ones((self.N, 1)).T.dot(se).dot(np.ones((self.C, 1)))  # TODO
-        mse = sse/(2*self.N*self.C) # TODO
+        self.logits = x
+        self.labels = y
+        nom = np.exp(self.logits-np.max(self.logits, axis=1)[:, None])
+        self.softmax = nom/np.sum(nom, axis=1)[:, None]
+        self.loss = -np.log((self.softmax*self.labels).sum(axis=1))
 
-        return mse
+        return self.loss
 
     def backward(self):
-
-        dLdA = (self.A - self.Y)/(self.N*self.C)
-
-        return dLdA
-
-
-class CrossEntropyLoss:
-
-    def forward(self, A, Y):
         """
-        Calculate the Cross Entropy Loss
-        :param A: Output of the model of shape (N, C)
-        :param Y: Ground-truth values of shape (N, C)
-        :Return: CrossEntropyLoss(scalar)
-
-        Refer the the writeup to determine the shapes of all the variables.
-        Use dtype ='f' whenever initializing with np.zeros()
+        TODO: Implement this function similar to how you did for HW1P1 or HW2P1.
+            out (np.array): (batch size, 10)
         """
-        self.A = A
-        self.Y = Y
-        N = self.A.shape[0]  # TODO
-        C = self.A.shape[1]  # TODO
 
-        Ones_C = np.ones((C, 1))  # TODO
-        Ones_N = np.ones((N, 1))  # TODO
+        self.gradient = self.softmax - self.labels
 
-        self.softmax = np.exp(self.A)/np.sum(np.exp(self.A), axis=1).reshape(-1, 1)  # TODO
-        crossentropy = (-self.Y*np.log(self.softmax)).dot(Ones_C)  # TODO
-        sum_crossentropy = Ones_N.T.dot(crossentropy)  # TODO
-
-        L = sum_crossentropy / N
-
-        return L
-
-    def backward(self):
-
-        dLdA = self.softmax-self.Y  # TODO
-
-        return dLdA
+        return self.gradient
